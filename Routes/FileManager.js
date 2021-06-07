@@ -1,4 +1,7 @@
-var multer = require("multer");
+import multer from "multer";
+import express from "express";
+const router = express.Router();
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'public/upload')
@@ -19,33 +22,32 @@ const upload = multer({
     }
 }).single("avatar");
 
-module.exports = function(app){
-    app.get("/testUploadFile", function(req, res){
-        res.render("testUpload");
+router.get("/uploadFile", function(req, res){
+    res.render("testUpload");
+});
+router.post("/uploadFile", function(req, res){
+    upload(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+            console.log("A Multer error occurred when uploading.");
+            res.json({
+                result: 0,
+                data: "A Multer error occurred when uploading."
+            });
+        } else if (err) {
+            console.log("An unknown error occurred when uploading." + err);
+            res.json({
+                result: 0,
+                data: "A Multer error occurred when uploading." + err
+            });
+        }else{
+            console.log("Upload is okay");
+            console.log(req.file); // Thông tin file đã upload
+            res.json({
+                result: 1,
+                data: req.file.filename
+            });
+        }
     });
-    app.post("/uploadFile", function(req, res){
-        upload(req, res, function (err) {
-            if (err instanceof multer.MulterError) {
-                console.log("A Multer error occurred when uploading.");
-                res.json({
-                    result: 0,
-                    data: "A Multer error occurred when uploading."
-                });
-            } else if (err) {
-                console.log("An unknown error occurred when uploading." + err);
-                res.json({
-                    result: 0,
-                    data: "A Multer error occurred when uploading." + err
-                });
-            }else{
-                console.log("Upload is okay");
-                console.log(req.file); // Thông tin file đã upload
-                res.json({
-                    result: 1,
-                    data: req.file
-                });
-            }
-    
-        });
-    });
-}
+});
+
+export default router;
